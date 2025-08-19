@@ -59,6 +59,80 @@ Changing username is a bit trickier because it’s tied to your home directory a
    ```bash
    chfn -f "New Full Name" newusername
    ```
+Perfect 👍 I’ll give you a **safe step-by-step script** that will change both the **username** and the **password** in Kali Linux.
+
+---
+
+## 🚀 Script to Change Username & Password
+
+1. **Log in as root (or switch to root):**
+
+   ```bash
+   sudo su
+   ```
+
+2. **Copy and paste this script** (replace `olduser`, `newuser`, and `newpassword` with your own):
+
+   ```bash
+   #!/bin/bash
+   # Script to change Kali username and password safely
+
+   olduser="kali"          # current username
+   newuser="ayesha"        # new username
+   newpassword="MyNewPass" # new password
+
+   echo "[*] Changing username from $olduser to $newuser..."
+
+   # Change username
+   usermod -l "$newuser" "$olduser"
+
+   # Rename home directory
+   usermod -d /home/$newuser -m $newuser
+
+   # Update password
+   echo "$newuser:$newpassword" | chpasswd
+
+   echo "[+] Username and password successfully updated!"
+   echo "    New login -> Username: $newuser | Password: $newpassword"
+   ```
+
+3. Save it as:
+
+   ```bash
+   nano change-user.sh
+   ```
+
+   Paste the script inside, then press **CTRL+O → Enter → CTRL+X** to save and exit.
+
+4. Make it executable:
+
+   ```bash
+   chmod +x change-user.sh
+   ```
+
+5. Run it:
+
+   ```bash
+   ./change-user.sh
+   ```
+
+6. **Reboot** to apply changes:
+
+   ```bash
+   reboot
+   ```
+
+---
+
+## ⚠️ Important Warnings
+
+* Always run as **root** or with `sudo`.
+* Make sure no process is using the old username when you run the script.
+* After reboot, log in with your **new username and password**.
+
+---
+
+👉 Do you want me to also add a **backup step** (just in case something goes wrong), so you can recover your account if login fails?
 
 ---
 
@@ -70,4 +144,4 @@ Changing username is a bit trickier because it’s tied to your home directory a
 
 ---
 
-👉 Do you want me to give you a **step-by-step script** that changes both username and password in one go, safely?
+
