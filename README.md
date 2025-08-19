@@ -132,16 +132,96 @@ Perfect 👍 I’ll give you a **safe step-by-step script** that will change bot
 
 ---
 
-👉 Do you want me to also add a **backup step** (just in case something goes wrong), so you can recover your account if login fails?
+Good catch 👍 You’re right: when you change a username in Kali (or any Debian-based Linux with **GNOME**), some config files, shortcuts, and cached settings may still reference the **old username**. Here’s how you can clean it up:
 
 ---
 
-## ⚠️ Important Notes
+## 🛠️ Fixing GUI Issues After Username Change
 
-* Don’t change the username **while logged in as that user**. Always use root or another admin account.
-* After changing the username, you may need to log out and log back in, or even reboot.
-* If you’re using GUI (like GNOME), some settings may still reference the old username — fix manually if needed.
+### 1. Update Display Manager (login screen)
+
+* If you use **GDM (GNOME Display Manager)**, check:
+
+  ```bash
+  sudo nano /etc/gdm3/custom.conf
+  ```
+
+  Make sure any `AutomaticLogin=olduser` line is updated to:
+
+  ```
+  AutomaticLogin=newuser
+  ```
 
 ---
+
+### 2. Update `.desktop` Files
+
+Sometimes application shortcuts may hardcode the old home path:
+
+* Check inside:
+
+  ```bash
+  grep -r "/home/olduser" /home/newuser/.local/share/applications/
+  ```
+* If found, edit them:
+
+  ```bash
+  nano /home/newuser/.local/share/applications/app.desktop
+  ```
+
+  Replace `/home/olduser/` with `/home/newuser/`.
+
+---
+
+### 3. Update GNOME Settings Database
+
+GNOME stores paths in **dconf**. Reset cached references:
+
+```bash
+dconf reset -f /
+```
+
+⚠️ This resets GNOME settings to default (wallpapers, dock favorites, etc.), but fixes broken references.
+
+---
+
+### 4. Fix File Permissions
+
+If you copied/renamed the home directory, some files may still belong to the old username. Run:
+
+```bash
+sudo chown -R newuser:newuser /home/newuser
+```
+
+---
+
+### 5. Update Autostart Apps
+
+Check:
+
+```bash
+ls /home/newuser/.config/autostart/
+```
+
+Open each `.desktop` file and replace any `/home/olduser` with `/home/newuser`.
+
+---
+
+### 6. Check Systemd Services
+
+If you had user-level services (like Docker, VSCode server, etc.), reload them:
+
+```bash
+sudo loginctl enable-linger newuser
+```
+
+---
+
+✅ After these fixes, your GNOME desktop should work smoothly with the **new username**.
+
+---
+
+👉 Do you want me to prepare a **post-username-change cleanup script** that automates most of these fixes for GNOME?
+
 
 
