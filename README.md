@@ -221,7 +221,114 @@ sudo loginctl enable-linger newuser
 
 ---
 
-👉 Do you want me to prepare a **post-username-change cleanup script** that automates most of these fixes for GNOME?
+
+Perfect ✅ I’ll give you a **cleanup script** that you can run **after changing your username**. This will fix most GNOME issues that still reference the old username.
+
+---
+
+## 🧹 Post-Username-Change Cleanup Script
+
+Save this as `cleanup-gnome.sh`:
+
+```bash
+#!/bin/bash
+# Cleanup script for GNOME after changing username
+# Usage: sudo ./cleanup-gnome.sh olduser newuser
+
+if [ $# -ne 2 ]; then
+    echo "Usage: $0 olduser newuser"
+    exit 1
+fi
+
+olduser=$1
+newuser=$2
+
+echo "[*] Fixing GNOME settings after username change..."
+echo "    Old: $olduser | New: $newuser"
+
+# 1. Update GDM3 (login screen auto-login if enabled)
+if [ -f /etc/gdm3/custom.conf ]; then
+    echo "[*] Updating /etc/gdm3/custom.conf..."
+    sed -i "s/$olduser/$newuser/g" /etc/gdm3/custom.conf
+fi
+
+# 2. Fix application shortcuts
+echo "[*] Fixing .desktop files in user applications..."
+grep -rl "/home/$olduser" /home/$newuser/.local/share/applications/ 2>/dev/null | while read file; do
+    sed -i "s#/home/$olduser#/home/$newuser#g" "$file"
+done
+
+# 3. Fix autostart apps
+echo "[*] Fixing autostart configs..."
+grep -rl "/home/$olduser" /home/$newuser/.config/autostart/ 2>/dev/null | while read file; do
+    sed -i "s#/home/$olduser#/home/$newuser#g" "$file"
+done
+
+# 4. Fix ownership of new home
+echo "[*] Fixing file ownership..."
+chown -R $newuser:$newuser /home/$newuser
+
+# 5. Reset GNOME dconf (optional)
+echo "[*] Resetting GNOME dconf settings to avoid broken paths..."
+sudo -u $newuser dconf reset -f /
+
+# 6. Re-enable lingering for systemd services
+echo "[*] Enabling lingering for $newuser..."
+loginctl enable-linger $newuser
+
+echo "[+] Cleanup finished. Reboot recommended!"
+```
+
+---
+
+## 🔧 How to Use
+
+1. Save script:
+
+   ```bash
+   nano cleanup-gnome.sh
+   ```
+
+   Paste the script inside, then save (CTRL+O → Enter → CTRL+X).
+
+2. Make it executable:
+
+   ```bash
+   chmod +x cleanup-gnome.sh
+   ```
+
+3. Run it with **old and new usernames**:
+
+   ```bash
+   sudo ./cleanup-gnome.sh olduser newuser
+   ```
+
+   Example:
+
+   ```bash
+   sudo ./cleanup-gnome.sh kali ayesha
+   ```
+
+4. Reboot:
+
+   ```bash
+   reboot
+   ```
+
+---
+
+✅ This script will:
+
+* Fix **login screen autologin**
+* Fix **.desktop shortcuts**
+* Fix **autostart configs**
+* Fix **file ownerships**
+* Reset **broken GNOME settings**
+* Restore **systemd services for user**
+
+---
+
+👉 Do you also want me to include an **automatic backup** step (before it edits configs), so if something goes wrong you can restore the old state?
 
 
 
